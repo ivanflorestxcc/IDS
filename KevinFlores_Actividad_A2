@@ -1,0 +1,165 @@
+package com.example.applicationreigtone
+
+import android.content.Intent
+import android.media.MediaPlayer
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.applicationreigtone.ui.theme.ApplicationReigtoneTheme
+
+class MainActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        setContent {
+            ApplicationReigtoneTheme {
+                PantallaRingtones()
+            }
+        }
+    }
+}
+
+@Composable
+fun PantallaRingtones() {
+
+    val lista = (1..10).map { "Audio $it" }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFDADADA))
+            .padding(16.dp)
+    ) {
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 🏷️ TÍTULO
+        Text(
+            text = "Ringtones",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
+        )
+
+        LazyColumn {
+            items(lista) { audio ->
+                ItemRingtone(nombre = audio)
+            }
+        }
+    }
+}
+
+@Composable
+fun ItemRingtone(nombre: String) {
+
+    val context = LocalContext.current
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+ 
+        IconButton(onClick = {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(context, R.raw.sonido1)
+            mediaPlayer?.start()
+        }) {
+            Image(
+                painter = painterResource(id = R.drawable.reproducir),
+                contentDescription = "Play",
+                modifier = Modifier.size(30.dp)
+            )
+        }
+
+        
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp)
+                .background(
+                    color = Color(0xFF5A6C8F),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = nombre,
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+      
+        IconButton(onClick = {
+            // lógica descarga
+        }) {
+            Image(
+                painter = painterResource(id = R.drawable.descargar),
+                contentDescription = "Descargar",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+       
+        IconButton(onClick = {
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "text/plain"
+            intent.putExtra(Intent.EXTRA_TEXT, "Escucha este audio: $nombre")
+            context.startActivity(Intent.createChooser(intent, "Compartir"))
+        }) {
+            Image(
+                painter = painterResource(id = R.drawable.compartir),
+                contentDescription = "Compartir",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+       
+        IconButton(onClick = {
+
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.type = "audio/*"
+
+            // Aquí puedes usar tu archivo de audio
+            intent.putExtra(Intent.EXTRA_STREAM, android.net.Uri.parse("android.resource://${context.packageName}/${R.raw.sonido1}"))
+
+            context.startActivity(Intent.createChooser(intent, "Enviar por Bluetooth"))
+
+        }) {
+            Image(
+                painter = painterResource(id = R.drawable.bluetooth),
+                contentDescription = "Bluetooth",
+                modifier = Modifier.size(24.dp)
+            )
+
+        }
+    }
+
+}
